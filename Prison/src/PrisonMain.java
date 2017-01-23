@@ -39,25 +39,28 @@ public class PrisonMain {
 		double srednia = 0;
 		incjalizacjaChromosomów();
 		przypiszWartosciLosowe();
-		System.out.println("Incjalne wartosci chromosomow i wynikow: ");
-		wyswietlWynikChromosomu();
 
 		// rozgrywa incjalny turniej
 		turniej();
-		System.out.println("Wartosci chromosomow i wynikow po turnieju: ");
+		System.out.println("\nWartosci chromosomow i wynikow po turnieju: ");
 		for (int i = 0; i < LICZEBNOSC_POPULACJI; i++) {
 			System.out.println("Wynik: " + chromosomWynik[0][i]
-					+ "\nChromosom: " + chromosomWynik[1][i]);
+					+ "\nChromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
 			wynik_global = wynik_global
 					+ Integer.parseInt(chromosomWynik[0][i]);
 		}
 
 		srednia = wynik_global / LICZEBNOSC_POPULACJI;
-		System.out.println("Srednia: " + srednia);	
+		System.out.println("\n\tSrednia: " + srednia);	
 		
-		//dokonuje selekcji 12-stu najs³abszych osobników
-		selekcja();
-		krzyzowanie();
+		selekcja();	//dokonuje selekcji 12-stu najs³abszych osobników
+		krzyzowanie(); //krzyzuje pozosta³ych osobników
+		dostosowanie(); //wymienia 12 slabych osobnikow na 12 powstalych z krzyzowania
+		mutacja(); //mutuje 1 bit wybranego osobnika
+
+		System.out.println("\nWartosci chromosomow po selekcji, krzyzowaniu, dostosowaniu i mutacji: ");
+		for (int i = 0; i < LICZEBNOSC_POPULACJI; i++)
+			System.out.println("Chromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
 		
 	}
 /******************** KONIEC FUNKCJI MAIN ***********************/
@@ -68,7 +71,6 @@ public class PrisonMain {
 			chromosom[i] = "";
 		}
 	}
-
 	 
 	/*funkcja incjalna, przypisuje populacji losowe wartosci na stany wejsciowe dla wszystkich osobników*/
 	public static void przypiszWartosciLosowe() {
@@ -78,10 +80,10 @@ public class PrisonMain {
 		}
 	}
 	
-	public static void wyswietlWynikChromosomu() {
-		for (int j = 0; j < LICZEBNOSC_POPULACJI; j++)
-			System.out.println("Wynik: " + chromosomWynik[0][j]
-					+ "\nChromosom: " + chromosomWynik[1][j]);
+	public static void wyswietlWynikChromosomow() {
+		for (int i = 0; i < LICZEBNOSC_POPULACJI; i++)
+			System.out.println("Wynik: " + chromosomWynik[0][i]
+					+ "\nChromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
 	}
 	
 	public static void zbierajWyniki(int epoka) {
@@ -172,6 +174,7 @@ public class PrisonMain {
 	
 	public static void krzyzowanie() {
 		int i;
+		
 		for (i = 0; i < LICZEBNOSC_POPULACJI; i++) {
 			int j = 0;
 			while (j < LICZEBNOSC_POPULACJI/3) {
@@ -193,8 +196,37 @@ public class PrisonMain {
 					+ chromosomParent1[i].substring(p2,
 							chromosomParent1[i].length());
 		}
-
 	}
+	
+	
+	public static void dostosowanie() {
+
+		for (int j = 0; j < LICZEBNOSC_POPULACJI/3; j++) {
+			for (int i = 0; i < LICZEBNOSC_POPULACJI; i++) {				
+				if (ewol[j] == Integer.parseInt(chromosomWynik[0][i]))
+					chromosomWynik[1][i] = chromosomChild[j];
+				else
+					chromosomWynik[1][i] = chromosomWynik[1][i];
+			}
+		}
+	}
+	
+	  public static void mutacja(){
+	    	int a=rnd.nextInt(LICZEBNOSC_POPULACJI);
+	    	int b=rnd.nextInt(ILOSC_ITERACJI);
+	    	
+	    	String data;
+	    	data=zamienBity(chromosom[a].substring(b,b+1));
+	    	chromosom[a]=chromosom[a].substring(0,b)+data+chromosom[a].substring(b+1, ILOSC_ITERACJI);
+	       
+	     
+	    }
+	    
+	    public static String zamienBity(String a){
+	    	return a=="0" ? "1": "0";
+	    }
+	
+	
 	
 	// metoda sortuje elementy tablicy przekazanej jako parametr
 		public static void sortowanieBabelkowe(int[] wejscie) {
