@@ -57,6 +57,7 @@ public class PrisonMain {
 		
 		//dokonuje selekcji 12-stu najs³abszych osobników
 		selekcja();
+		krzyzowanie();
 		
 	}
 /******************** KONIEC FUNKCJI MAIN ***********************/
