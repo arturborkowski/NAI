@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Random;
 
 /*
@@ -32,36 +35,82 @@ public class PrisonMain {
 	static Random rnd = new Random(); // 0 zdradzaj, 1 kooperuj
 	
 	
+	public static File logFile = new File("../log.txt");
+	public static PrintWriter zapis;
+	
+	
 /******************** FUNKCJA MAIN ***********************/
-	public static void main(String args[]) {
+	public static void main(String args[]) throws FileNotFoundException {
 
+		zapis = new PrintWriter(logFile);
 		int wynik_global = 0;
 		double srednia = 0;
 		incjalizacjaChromosomów();
 		przypiszWartosciLosowe();
+		
+		wyswietlIZapiszDoPliku("Incjalne wartosci chromosomow i wynikow: ");
+		for(int i = 0; i<LICZEBNOSC_POPULACJI;i++)
+			wyswietlIZapiszDoPliku("Wynik: "+chromosomWynik[0][i]+"\r\nChromosom("+Integer.sum(i, 1)+"): "+chromosomWynik[1][i]);
+
 
 		// rozgrywa incjalny turniej
 		turniej();
-		System.out.println("\nWartosci chromosomow i wynikow po turnieju: ");
+		wyswietlIZapiszDoPliku("\r\nWartosci chromosomow i wynikow po turnieju: ");
 		for (int i = 0; i < LICZEBNOSC_POPULACJI; i++) {
-			System.out.println("Wynik: " + chromosomWynik[0][i]
-					+ "\nChromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
+			wyswietlIZapiszDoPliku("Wynik: " + chromosomWynik[0][i]
+					+ "\r\nChromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
 			wynik_global = wynik_global
 					+ Integer.parseInt(chromosomWynik[0][i]);
 		}
 
 		srednia = wynik_global / LICZEBNOSC_POPULACJI;
-		System.out.println("\n\tSrednia: " + srednia);	
+		wyswietlIZapiszDoPliku("\r\n\tSrednia: " + srednia);	
 		
 		selekcja();	//dokonuje selekcji 12-stu najs³abszych osobników
 		krzyzowanie(); //krzyzuje pozosta³ych osobników
 		dostosowanie(); //wymienia 12 slabych osobnikow na 12 powstalych z krzyzowania
 		mutacja(); //mutuje 1 bit wybranego osobnika
 
-		System.out.println("\nWartosci chromosomow po selekcji, krzyzowaniu, dostosowaniu i mutacji: ");
+		wyswietlIZapiszDoPliku("\r\nWartosci chromosomow po selekcji, krzyzowaniu, dostosowaniu i mutacji: ");
 		for (int i = 0; i < LICZEBNOSC_POPULACJI; i++)
-			System.out.println("Chromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
+			wyswietlIZapiszDoPliku("Chromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
 		
+/*---------------------------------------------------------------------------------------*/
+		for(int i=0; i<EPOKI; i++) {
+			wynik_global = 0;
+
+			wyswietlIZapiszDoPliku("\n###################################\r\nPoczatek epoki "
+					+ Integer.sum(i, 1));
+			wyswietlIZapiszDoPliku("Incjalne wartosci chromosomow i wynikow: ");
+			
+			for (int j = 0; j < LICZEBNOSC_POPULACJI; j++) {
+				wyswietlIZapiszDoPliku("Wynik: " + chromosomWynik[0][j]
+						+ "\r\nChromosom("+Integer.sum(j, 1)+"): " + chromosomWynik[1][j]);
+				wynik_global = wynik_global
+						+ Integer.parseInt(chromosomWynik[0][j]);
+				srednia = wynik_global / LICZEBNOSC_POPULACJI;
+			}
+			
+			turniejIterowany();
+			
+			wyswietlIZapiszDoPliku("\r\nWartosci chromosomow i wynikow po turnieju: ");
+			wyswietlWynikChromosomow();
+			
+			selekcja();
+			krzyzowanie();
+			dostosowanie();
+			mutacja();
+			
+			wyswietlIZapiszDoPliku("\r\nWartosci chromosomow po selekcji, krzyzowaniu, dostosowaniu i mutacji: ");
+			wyswietlWynikChromosomow();
+			
+			wyswietlIZapiszDoPliku("Koniec epoki " +Integer.sum(i, 1));
+			wyswietlIZapiszDoPliku("Suma wynikow z epoki: "+wynik_global);
+			wyswietlIZapiszDoPliku("Srednia z epoki: "+srednia+"\r\n\r\n");
+			
+		}
+		
+		zapis.close();
 	}
 /******************** KONIEC FUNKCJI MAIN ***********************/
 
@@ -82,8 +131,8 @@ public class PrisonMain {
 	
 	public static void wyswietlWynikChromosomow() {
 		for (int i = 0; i < LICZEBNOSC_POPULACJI; i++)
-			System.out.println("Wynik: " + chromosomWynik[0][i]
-					+ "\nChromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
+			wyswietlIZapiszDoPliku("Wynik: " + chromosomWynik[0][i]
+					+ "\r\nChromosom("+Integer.sum(i, 1)+"): " + chromosomWynik[1][i]);
 	}
 	
 	public static void zbierajWyniki(int epoka) {
@@ -148,6 +197,48 @@ public class PrisonMain {
 			}
 
 			zbierajWyniki(0);
+		}
+	}
+	
+	public static void turniejIterowany(){
+		
+		int polowaPopulacji = LICZEBNOSC_POPULACJI/2;
+
+		zerujWyniki();		
+		
+		for (int j = 0; j < polowaPopulacji; j++) {
+			for (int i = 0; i < ILOSC_ITERACJI; i++) {
+				
+				populacja[j + polowaPopulacji] = rnd.nextInt(2);// przypisuje wartosc losowa dla drugiego osobnika
+				
+				if ((populacja[j] == populacja[j + polowaPopulacji]) && populacja[j] == 1) {
+					wyniki[j] += 3;
+					wyniki[j + polowaPopulacji] += 3;
+					stan[0][j] = "" + populacja[j];// aktualna odpowiedz jako aktualna decyzja
+					stan[1][j] = "" + populacja[j + polowaPopulacji];// aktualna odpowiedz jako aktualna decyzja
+
+				} else if ((populacja[j] == populacja[j + polowaPopulacji])
+						&& populacja[j] == 0) {
+					wyniki[j] += 1;
+					wyniki[j + polowaPopulacji] += 1;
+					stan[0][j] = "" + populacja[j];// aktualna odpowiedz jako Aktualna decyzja
+					stan[1][j] = "" + populacja[j + polowaPopulacji];// aktualna odpowiedz jako aktualna decyzja
+
+				} else if ((populacja[j] != populacja[j + polowaPopulacji])
+						&& populacja[j] == 1) {
+					wyniki[j] += 5;
+					wyniki[j + polowaPopulacji] = wyniki[j + polowaPopulacji];
+					stan[0][j] = "" + populacja[j];// aktualna odpowiedz jako aktualna decyzja
+					stan[1][j] = "" + populacja[j + polowaPopulacji];// aktualna odpowiedz jako aktualna decyzja
+
+				} else if ((populacja[j] != populacja[j + polowaPopulacji])
+						&& populacja[j] == 0) {
+					wyniki[j] = wyniki[j];
+					wyniki[j + polowaPopulacji] += 5;
+					stan[0][j] = "" + populacja[j];// aktualna odpowiedz jako aktualna decyzja
+					stan[1][j] = "" + populacja[j + polowaPopulacji];// aktualna odpowiedz jako aktualna decyzja
+				}
+			}
 		}
 	}
 	
@@ -224,6 +315,17 @@ public class PrisonMain {
 	    
 	    public static String zamienBity(String a){
 	    	return a=="0" ? "1": "0";
+	    }
+	    
+	    public static void zerujWyniki(){
+			for (int i=0;i<LICZEBNOSC_POPULACJI;i++){
+				wyniki[i]=0;
+			}
+		}
+	    
+	    public static void wyswietlIZapiszDoPliku(String string) {
+	    	System.out.println(string);
+	    	zapis.println(string);
 	    }
 	
 	
