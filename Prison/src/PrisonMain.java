@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Random;
 
 /*
@@ -11,8 +12,8 @@ import java.util.Random;
 public class PrisonMain {
 	
 	static final int EPOKI = 30; // liczba epok
-	static final int LICZEBNOSC_POPULACJI = 36;
-	static final int ILOSC_ITERACJI = 100;
+	static final int LICZEBNOSC_POPULACJI = 36; // wielokrotnoœæ 6
+	static final int ILOSC_ITERACJI = 100; // iloœæ rund rozegranych w ka¿dym chromosomie
 		
 	static String[] chromosom = new String[LICZEBNOSC_POPULACJI];
 	
@@ -24,18 +25,19 @@ public class PrisonMain {
 
 	static String[][] chromosomWynik = new String[2][LICZEBNOSC_POPULACJI];// tablica przechowujaca kombinacje chromosom-wynik
 
-	static int ewol[] = new int[12];// grupa która odpadnie
-	static int ewolBest1[] = new int[12];// pierwsza grupa do krzy¿owania siê
-	static int ewolBest2[] = new int[12];// druga grupa do krzy¿owania siê
+	static int ewol[] = new int[LICZEBNOSC_POPULACJI/3];// grupa która odpadnie
+	static int ewolBest1[] = new int[LICZEBNOSC_POPULACJI/3];// pierwsza grupa do krzy¿owania siê
+	static int ewolBest2[] = new int[LICZEBNOSC_POPULACJI/3];// druga grupa do krzy¿owania siê
 	
-	static String[] chromosomChild = new String[12];// do przechowania nowych egzemplarzy
-	static String[] chromosomParent1 = new String[12];// do przechowania jednego rodzica
-	static String[] chromosomParent2 = new String[12];// do przechowania drugiego rodzica
+	static String[] chromosomChild = new String[LICZEBNOSC_POPULACJI/3];// do przechowania nowych egzemplarzy
+	static String[] chromosomParent1 = new String[LICZEBNOSC_POPULACJI/3];// do przechowania jednego rodzica
+	static String[] chromosomParent2 = new String[LICZEBNOSC_POPULACJI/3];// do przechowania drugiego rodzica
 	
 	static Random rnd = new Random(); // 0 zdradzaj, 1 kooperuj
 	
-	
-	public static File logFile = new File("../log.txt");
+	@SuppressWarnings("deprecation")
+	public static String timestamp = new Date().toLocaleString().replace(' ', '_').replace(':', '-');
+	public static File logFile = new File("../log_"+timestamp+".txt");
 	public static PrintWriter zapis;
 	
 	
